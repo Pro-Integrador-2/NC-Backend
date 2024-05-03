@@ -27,4 +27,3 @@ def scrap_WRadio():
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
 
-print(scrap_WRadio())
