@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from utils import scrap_WRadio, scrap_LaSillaVacia
+from utils import scrap_WRadio, scrap_LaSillaVacia, scrap_noticiasCaracol
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +14,11 @@ def get_news_WRadio():
 @app.route('/news/la-silla-vacia', methods=['GET'])
 def get_news_LaSillaVacia():
     news = scrap_LaSillaVacia()
+    return jsonify(news)
+
+@app.route('/news/noticias-caracol', methods=['GET'])
+def get_news_noticiasCaracol():
+    news = scrap_noticiasCaracol()
     return jsonify(news)
 
 if __name__ == '__main__':
