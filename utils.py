@@ -78,8 +78,8 @@ def scrap_noticiasCaracol():
             header_tag = noticia.find('h2', class_='PromoB-title')
             news_title = header_tag.text.strip() if header_tag else ""
             news_link = header_tag.find('a')['href'] if header_tag and header_tag.find('a') else ""
-            image_tag = noticia.find('img')
-            image_link = image_tag['src'] if image_tag else ""
+            image_tag = noticia.find('img', class_='Image')
+            image_link = image_tag['data-src'] if image_tag else ""
             description_tag = noticia.find('h3', class_='PromoB-description')
             description = description_tag.text.strip() if description_tag else ""
             news_text = ""
