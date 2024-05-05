@@ -12,7 +12,7 @@ def scrap_WRadio():
             header_tag = noticia.find('h3')
             news_title = header_tag.text.strip() if header_tag else ""
             news_link = header_tag.find('a')['href'] if header_tag and header_tag.find('a') else ""
-            news_link = "https://www.wradio.com.co/actualidad" + news_link if news_link else ""
+            news_link = "https://www.wradio.com.co" + news_link if news_link else ""
             image_tag = noticia.find('img')
             image_link = image_tag['src'] if image_tag else ""
             description_tag = noticia.find('p', class_='ent')
@@ -21,8 +21,10 @@ def scrap_WRadio():
             if news_link != "":
                 response_news = requests.get(news_link)
                 soup_news = BeautifulSoup(response_news.text, 'html.parser')
-                paragraphs = soup_news.find('div', class_='cnt-txt').find_all('p')
-                news_text = "\n".join([p.text if p.text != "Lea también:" else "" for p in paragraphs])
+                paragraphs = soup_news.find('div', class_='cnt-txt')
+                if paragraphs:
+                    paragraphs = paragraphs.find_all('p')
+                    news_text = "\n".join([p.text if p.text != "Lea también:" else "" for p in paragraphs])
 
             newsInformation.append(
                 {"title": news_title, "link": news_link, "image": image_link, "description": description,
@@ -62,8 +64,6 @@ def scrap_LaSillaVacia():
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
 
-
-scrap_LaSillaVacia()
 
 
 def scrap_noticiasCaracol():
