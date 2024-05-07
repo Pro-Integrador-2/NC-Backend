@@ -1,5 +1,22 @@
 import requests
+import os
+from dotenv import load_dotenv, find_dotenv
+_ = load_dotenv(find_dotenv())
 from bs4 import BeautifulSoup
+import google.generativeai as genai
+
+GOOGLE_API_KEY=os.getenv('GOOGLE_API_KEY')
+genai.configure(api_key=GOOGLE_API_KEY)
+
+new_diccionario = {
+    "title": "", 
+    "link": "", 
+    "image": "", 
+    "description": "",
+    "tag": "Derecha", 
+    "media": "Revista Semana", 
+    "text": ""
+}
 
 def link_exists(news_list, link):
     return any(news["link"] == link for news in news_list)
@@ -65,8 +82,6 @@ def scrap_LaSillaVacia():
     else:
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
-
-
 
 def scrap_noticiasCaracol():
     newsInformation = []
@@ -134,3 +149,22 @@ def scrap_revistaSemana():
     else:
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
+
+
+def geminiNoticias(news):
+    model = genai.GenerativeModel('gemini-pro')
+
+    prompt = f"""
+    Voy a darte un arreglo de objectos los cuales son noticias y quiero que para cada noticia
+    me crees otra de una manera imparcial evitando el sesgo politico. 
+    Junto con ello que me identifiques si es Neutral, Parcial o Imparcial dentro del atrubuto "tag".
+
+    Este es la estructura que tiene cada noticia:
+    {new_diccionario}
+
+    Quiero que me devuelves las noticias en un arreglo de la misma manera como te las doy.
+
+    Estas son las noticas para imparcializar: {news}
+    """
+    response = model.generate_content(prompt)
+    return response.text
