@@ -1,11 +1,13 @@
-import requests
 import os
+
+import requests
 from dotenv import load_dotenv, find_dotenv
+
 _ = load_dotenv(find_dotenv())
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 
-GOOGLE_API_KEY=os.getenv('GOOGLE_API_KEY')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
 new_diccionario = {
@@ -18,10 +20,17 @@ new_diccionario = {
     "text": ""
 }
 
+
 def link_exists(news_list, link):
+    """Verifica si un enlace ya existe en la lista de noticias."""
     return any(news["link"] == link for news in news_list)
 
+
 def scrap_WRadio(limit=15):
+    """
+        Realiza web scraping a la página de W Radio y extrae las noticias más recientes.
+        Devuelve una lista de noticias con título, enlace, imagen, descripción, texto completo y etiqueta.
+    """
     newsInformation = []
     try:
         response = requests.get("https://www.wradio.com.co/actualidad/")
@@ -59,7 +68,12 @@ def scrap_WRadio(limit=15):
 
     return newsInformation[:limit]
 
+
 def scrap_LaSillaVacia():
+    """
+        Realiza web scraping a la página de La Silla Vacía y extrae las noticias más recientes.
+        Devuelve una lista de noticias con título, enlace, imagen, descripción, texto completo y etiqueta.
+    """
     newsInformation = []
     try:
         response = requests.get("https://www.lasillavacia.com/category/en-vivo/")
@@ -92,7 +106,12 @@ def scrap_LaSillaVacia():
 
     return newsInformation
 
+
 def scrap_noticiasCaracol(limit=10):
+    """
+       Realiza web scraping a la página de Noticias Caracol y extrae las noticias más recientes.
+       Devuelve una lista de noticias con título, enlace, imagen, descripción, texto completo y etiqueta.
+    """
     newsInformation = []
     try:
         response = requests.get("https://www.noticiascaracol.com/noticias")
@@ -127,7 +146,12 @@ def scrap_noticiasCaracol(limit=10):
 
     return newsInformation[:limit]
 
+
 def scrap_revistaSemana(limit=10):
+    """
+        Realiza web scraping a la página de Revista Semana y extrae las noticias más recientes.
+        Devuelve una lista de noticias con título, enlace, imagen, descripción, texto completo y etiqueta.
+    """
     newsInformation = []
     try:
         response = requests.get("https://www.semana.com/actualidad")
@@ -137,7 +161,8 @@ def scrap_revistaSemana(limit=10):
 
         for noticia in body:
             header_link = noticia.find('div', class_='card')
-            link = "https://www.semana.com" + header_link.find('a')['href'] if header_link and header_link.find('a') else ""
+            link = "https://www.semana.com" + header_link.find('a')['href'] if header_link and header_link.find(
+                'a') else ""
             if link:
                 response_news = requests.get(link)
                 response_news.raise_for_status()  # Lanza una excepción si la solicitud no tiene éxito
@@ -149,7 +174,8 @@ def scrap_revistaSemana(limit=10):
                     "description": soup_news.find('div', class_='mx-auto max-w-[968px]').find('p').text.strip(),
                     "tag": "Derecha",
                     "media": "Revista Semana",
-                    "text": "\n".join([p.text.strip() for p in soup_news.find('div', class_='paywall').find_all('p') if p.text != "Lea también:"])
+                    "text": "\n".join([p.text.strip() for p in soup_news.find('div', class_='paywall').find_all('p') if
+                                       p.text != "Lea también:"])
                 }
                 if new["text"] and not link_exists(newsInformation, new["link"]):
                     newsInformation.append(new)
@@ -161,8 +187,11 @@ def scrap_revistaSemana(limit=10):
     return newsInformation[:limit]
 
 
-
 def geminiNoticias(news):
+    """
+        Utiliza el modelo generativo de IA de Google para crear versiones imparciales de las noticias proporcionadas.
+        Analiza el sesgo político y devuelve las noticias imparcializadas junto con su clasificación.
+    """
     model = genai.GenerativeModel('gemini-pro')
 
     prompt = f"""
