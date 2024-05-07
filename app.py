@@ -29,9 +29,9 @@ def get_news_revistaSemana():
 
 @app.route('/news/procesar-noticias', methods=["POST"])
 def post_news_procesarNoticias():
-    news = request.get_json() 
+    news = request.get_json()
     impartialNews = geminiNoticias(news['news'])
-    return {"response": impartialNews}
+    return jsonify({"response": impartialNews})
 
 if __name__ == '__main__':
     app.run(debug=True)
