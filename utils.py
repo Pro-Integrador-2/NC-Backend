@@ -87,7 +87,7 @@ def scrap_LaSillaVacia():
 
 def scrap_noticiasCaracol():
     newsInformation = []
-    response = requests.get("https://www.noticiascaracol.com/ahora")
+    response = requests.get("https://www.noticiascaracol.com/noticias")
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
         body = soup.find('main', class_='SectionPage-main').findAll('div', class_='PromoB-content')
