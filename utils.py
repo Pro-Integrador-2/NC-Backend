@@ -9,12 +9,12 @@ GOOGLE_API_KEY=os.getenv('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
 new_diccionario = {
-    "title": "", 
-    "link": "", 
-    "image": "", 
+    "title": "",
+    "link": "",
+    "image": "",
     "description": "",
-    "tag": "Derecha", 
-    "media": "Revista Semana", 
+    "tag": "",
+    "media": "",
     "text": ""
 }
 
@@ -44,10 +44,10 @@ def scrap_WRadio():
                 if paragraphs:
                     paragraphs = paragraphs.find_all('p')
                     news_text = "\n".join([p.text if p.text != "Lea también:" else "" for p in paragraphs])
-
-            newsInformation.append(
-                {"title": news_title, "link": news_link, "image": image_link, "description": description,
-                 "tag": "Izquierda", "media": "W Radio", "text": news_text})
+            if news_text:
+                newsInformation.append(
+                    {"title": news_title, "link": news_link, "image": image_link, "description": description,
+                     "tag": "Izquierda", "media": "W Radio", "text": news_text})
     else:
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
@@ -75,17 +75,19 @@ def scrap_LaSillaVacia():
                     soup_news = BeautifulSoup(response_news.text, 'html.parser')
                     paragraphs = soup_news.find('div', class_='entry-content').find_all('p')
                     news_text = "\n".join([p.text.strip() for p in paragraphs if p.text != "Lea también:"])
-
-            newsInformation.append(
-                {"title": news_title, "link": news_link, "image": image_link, "description": description,
-                 "tag": "Centro Izquierda", "media": "La Silla Vacía", "text": news_text})
+            if news_text:
+                newsInformation.append(
+                    {"title": news_title, "link": news_link, "image": image_link, "description": description,
+                     "tag": "Centro Izquierda", "media": "La Silla Vacía", "text": news_text})
     else:
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
 
+
+
 def scrap_noticiasCaracol():
     newsInformation = []
-    response = requests.get("https://www.noticiascaracol.com/ahora")
+    response = requests.get("https://www.noticiascaracol.com/noticias")
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
         body = soup.find('main', class_='SectionPage-main').findAll('div', class_='PromoB-content')
@@ -105,10 +107,10 @@ def scrap_noticiasCaracol():
                     soup_news = BeautifulSoup(response_news.text, 'html.parser')
                     paragraphs = soup_news.find('div', class_='RichTextArticleBody-body RichTextBody').find_all('p')
                     news_text = "\n".join([p.text.strip() for p in paragraphs if p.text != "Lea también:"])
-
-            newsInformation.append(
-                {"title": news_title, "link": news_link, "image": image_link, "description": description,
-                 "tag": "Centro Derecha", "media": "Noticias Caracol", "text": news_text})
+            if news_text:
+                newsInformation.append(
+                    {"title": news_title, "link": news_link, "image": image_link, "description": description,
+                     "tag": "Centro Derecha", "media": "Noticias Caracol", "text": news_text})
     else:
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
@@ -121,17 +123,18 @@ def scrap_revistaSemana():
         body = soup.find('main', class_='main-section').findAll('div', class_='grid-item')
         for index, noticia in enumerate(body): 
             header_link = noticia.find('div', class_='card')
-            link = "https://www.semana.com"+header_link.find('a')['href'] if header_link and header_link.find('a') else ""
+            link = "https://www.semana.com" + header_link.find('a')['href'] if header_link and header_link.find(
+                'a') else ""
             if link != "":
                 response_news = requests.get(link)
                 if response_news.status_code == 200:
                     new = {
-                        "title": "", 
-                        "link": "", 
-                        "image": "", 
+                        "title": "",
+                        "link": "",
+                        "image": "",
                         "description": "",
-                        "tag": "Derecha", 
-                        "media": "Revista Semana", 
+                        "tag": "Derecha",
+                        "media": "Revista Semana",
                         "text": ""
                     }
                     soup_news = BeautifulSoup(response_news.text, 'html.parser')
@@ -144,7 +147,7 @@ def scrap_revistaSemana():
                     new["description"] = description_tag.text.strip() if description_tag else ""
                     paragraphs = soup_news.find('div', class_='paywall').find_all('p')
                     new["text"] = "\n".join([p.text.strip() for p in paragraphs if p.text != "Lea también:"])
-            if not link_exists(newsInformation, new["link"]):
+            if new["text"] and not link_exists(newsInformation, new["link"]):
                 newsInformation.append(new)
     else:
         print('Error al realizar la solicitud HTTP:', response.status_code)
