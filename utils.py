@@ -1,10 +1,25 @@
 import requests
+import os
+from dotenv import load_dotenv, find_dotenv
+_ = load_dotenv(find_dotenv())
 from bs4 import BeautifulSoup
+import google.generativeai as genai
 
+GOOGLE_API_KEY=os.getenv('GOOGLE_API_KEY')
+genai.configure(api_key=GOOGLE_API_KEY)
+
+new_diccionario = {
+    "title": "",
+    "link": "",
+    "image": "",
+    "description": "",
+    "tag": "Derecha",
+    "media": "Revista Semana",
+    "text": ""
+}
 
 def link_exists(news_list, link):
     return any(news["link"] == link for news in news_list)
-
 
 def scrap_WRadio():
     newsInformation = []
@@ -69,6 +84,7 @@ def scrap_LaSillaVacia():
     return newsInformation
 
 
+
 def scrap_noticiasCaracol():
     newsInformation = []
     response = requests.get("https://www.noticiascaracol.com/ahora")
@@ -99,14 +115,13 @@ def scrap_noticiasCaracol():
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
 
-
 def scrap_revistaSemana():
-    newsInformation = []
+    newsInformation = []     
     response = requests.get("https://www.semana.com/actualidad")
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
         body = soup.find('main', class_='main-section').findAll('div', class_='grid-item')
-        for index, noticia in enumerate(body):
+        for index, noticia in enumerate(body): 
             header_link = noticia.find('div', class_='card')
             link = "https://www.semana.com" + header_link.find('a')['href'] if header_link and header_link.find(
                 'a') else ""
@@ -137,3 +152,22 @@ def scrap_revistaSemana():
     else:
         print('Error al realizar la solicitud HTTP:', response.status_code)
     return newsInformation
+
+
+def geminiNoticias(news):
+    model = genai.GenerativeModel('gemini-pro')
+
+    prompt = f"""
+    Voy a darte un arreglo de objectos los cuales son noticias y quiero que para cada noticia
+    me crees otra de una manera imparcial evitando el sesgo politico. 
+    Junto con ello que me identifiques si es Neutral, Parcial o Imparcial dentro del atrubuto "tag".
+
+    Este es la estructura que tiene cada noticia:
+    {new_diccionario}
+
+    Quiero que me devuelves las noticias en un arreglo de la misma manera como te las doy.
+
+    Estas son las noticas para imparcializar: {news}
+    """
+    response = model.generate_content(prompt)
+    return response.text
