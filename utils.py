@@ -21,7 +21,7 @@ new_diccionario = {
 def link_exists(news_list, link):
     return any(news["link"] == link for news in news_list)
 
-def scrap_WRadio():
+def scrap_WRadio(limit=15):
     newsInformation = []
     try:
         response = requests.get("https://www.wradio.com.co/actualidad/")
@@ -52,10 +52,12 @@ def scrap_WRadio():
                             {"title": news_title, "link": news_link, "image": image_link,
                              "description": description, "tag": "Izquierda",
                              "media": "W Radio", "text": news_text})
+                        if len(newsInformation) >= limit:
+                            break  # Detener el bucle si alcanzamos el límite
     except requests.RequestException as e:
         print(f"Error al realizar la solicitud HTTP: {e}")
 
-    return newsInformation
+    return newsInformation[:limit]
 
 def scrap_LaSillaVacia():
     newsInformation = []
@@ -90,7 +92,7 @@ def scrap_LaSillaVacia():
 
     return newsInformation
 
-def scrap_noticiasCaracol():
+def scrap_noticiasCaracol(limit=10):
     newsInformation = []
     try:
         response = requests.get("https://www.noticiascaracol.com/noticias")
@@ -111,19 +113,21 @@ def scrap_noticiasCaracol():
                 response_news = requests.get(news_link)
                 response_news.raise_for_status()  # Lanza una excepción si la solicitud no tiene éxito
                 soup_news = BeautifulSoup(response_news.text, 'html.parser')
-                paragraphs = soup_news.find('div', class_='RichTextArticleBody-body RichTextBody').find_all('p')
+                paragraphs = soup_news.find('div', class_='RichTextBody').find_all('p')
                 news_text = "\n".join([p.text.strip() for p in paragraphs if p.text != "Lea también:"])
                 if news_text:
                     newsInformation.append(
                         {"title": news_title, "link": news_link, "image": image_link,
                          "description": description, "tag": "Centro Derecha",
                          "media": "Noticias Caracol", "text": news_text})
+                    if len(newsInformation) >= limit:
+                        break  # Detener el bucle si alcanzamos el límite
     except requests.RequestException as e:
         print(f"Error al realizar la solicitud HTTP: {e}")
 
-    return newsInformation
+    return newsInformation[:limit]
 
-def scrap_revistaSemana():
+def scrap_revistaSemana(limit=10):
     newsInformation = []
     try:
         response = requests.get("https://www.semana.com/actualidad")
@@ -149,10 +153,12 @@ def scrap_revistaSemana():
                 }
                 if new["text"] and not link_exists(newsInformation, new["link"]):
                     newsInformation.append(new)
+                    if len(newsInformation) >= limit:
+                        break  # Detener el bucle si alcanzamos el límite
     except requests.RequestException as e:
         print(f"Error al realizar la solicitud HTTP: {e}")
 
-    return newsInformation
+    return newsInformation[:limit]
 
 
 
