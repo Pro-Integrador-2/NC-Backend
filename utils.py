@@ -13,8 +13,8 @@ new_diccionario = {
     "link": "",
     "image": "",
     "description": "",
-    "tag": "Derecha",
-    "media": "Revista Semana",
+    "tag": "",
+    "media": "",
     "text": ""
 }
 
